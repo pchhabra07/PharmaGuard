@@ -1,0 +1,55 @@
+faers:
+  base_url: https://fis.fda.gov/content/Exports
+  quarters:
+  - 2026q1
+  file_delimiter: $
+  tables:
+  - DEMO
+  - DRUG
+  - REAC
+  - OUTC
+  - INDI
+paths:
+  raw: data/raw
+  processed: data/processed
+  splits: data/splits
+  eda: data/eda
+  model_artifacts: model_artifacts
+preprocessing:
+  age_bins:
+  - 0
+  - 18
+  - 45
+  - 65
+  - 75
+  - 120
+  age_labels:
+  - 0-17
+  - 18-44
+  - 45-64
+  - 65-74
+  - 75+
+  unknown_age_label: unknown
+  target_column: is_serious
+  serious_outcome_codes:
+  - DE
+  - HO
+  - DS
+  - LT
+  - OT
+  categorical_features:
+  - sex
+  - route
+  - age_group
+  - drug_name_normalized
+  numerical_features:
+  - polypharmacy_count
+  drug_fuzzy_threshold: 85
+splitting:
+  train_ratio: 0.7
+  val_ratio: 0.15
+  test_ratio: 0.15
+  random_state: 42
+training:
+  scale_pos_weight: 0.38
+  threshold: 0.3

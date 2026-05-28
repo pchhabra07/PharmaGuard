@@ -1,0 +1,16 @@
+# ============================================================
+# PharmaGuard — Python Dependencies (Phase 1 & 2)
+# ============================================================
+
+pandas>=2.0
+numpy
+requests
+rapidfuzz
+scikit-learn>=1.3
+xgboost>=2.0
+matplotlib
+seaborn
+pyyaml
+joblib
+pyarrow
+

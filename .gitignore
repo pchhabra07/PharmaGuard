@@ -1,0 +1,47 @@
+# ===========================
+# PharmaGuard .gitignore
+# ===========================
+
+# --- Project-specific ---
+*.docx
+data/raw/
+data/processed/
+data/splits/
+data/eda/
+model_artifacts/
+mlflow/
+mlruns/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+dist/
+build/
+*.whl
+
+# --- Virtual Environment ---
+.venv/
+venv/
+env/
+ENV/
+
+# --- IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+
+# --- Logs ---
+*.log
