@@ -15,6 +15,8 @@ paths:
   splits: data/splits
   eda: data/eda
   model_artifacts: model_artifacts
+  evaluation: data/eda/training
+  model_cards: model_cards
 preprocessing:
   age_bins:
   - 0
@@ -52,4 +54,12 @@ splitting:
   random_state: 42
 training:
   scale_pos_weight: 0.38
-  threshold: 0.3
+  threshold: 0.24
+  n_estimators: 500
+  max_depth: 6
+  learning_rate: 0.1
+  random_state: 42
+  eval_metric: aucpr
+  early_stopping_rounds: 30
+  threshold_strategy: f1
+  min_precision: 0.3

@@ -1,5 +1,5 @@
 # ============================================================
-# PharmaGuard — Python Dependencies (Phase 1 & 2)
+# PharmaGuard — Python Dependencies (Phase 1, 2 & 3)
 # ============================================================
 
 pandas>=2.0
