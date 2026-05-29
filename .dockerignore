@@ -1,0 +1,54 @@
+# ==============================================================
+# PharmaGuard — .dockerignore
+# ==============================================================
+# Exclude files from the Docker build context to speed up
+# builds and reduce image size.
+# ==============================================================
+
+# Version control
+.git
+.github
+.gitignore
+
+# Virtual environment
+.venv
+venv
+env
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Data (large files not needed for serving)
+data/
+
+# MLflow local tracking
+mlruns/
+mlflow/
+
+# Logs
+*.log
+
+# Python cache
+__pycache__
+*.py[cod]
+*$py.class
+*.egg-info
+
+# Documentation (not needed in container)
+*.docx
+*.md
+!README.md
+
+# Tests
+tests/
+
+# Docker (avoid recursive inclusion)
+docker/docker-compose.yml
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini

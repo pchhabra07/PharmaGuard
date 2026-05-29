@@ -1,0 +1,31 @@
+# ==============================================================
+# PharmaGuard — Docker Compose
+# ==============================================================
+# Single-service compose for local development and testing.
+#
+# Usage:
+#   docker compose -f docker/docker-compose.yml up --build
+#   docker compose -f docker/docker-compose.yml down
+# ==============================================================
+
+services:
+  pharma-api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: pharmaguard-api
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount model artifacts to allow hot-swapping without rebuild
+      - ../model_artifacts:/app/model_artifacts:ro
+      - ../metrics:/app/metrics:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s

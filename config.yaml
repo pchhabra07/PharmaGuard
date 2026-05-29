@@ -63,3 +63,11 @@ training:
   early_stopping_rounds: 30
   threshold_strategy: f1
   min_precision: 0.3
+mlflow:
+  tracking_uri: mlruns
+  experiment_name: PharmaGuard-ADR-Detection
+  enabled: true
+api:
+  host: 0.0.0.0
+  port: 8000
+  model_version: v2
