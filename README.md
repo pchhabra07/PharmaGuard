@@ -37,22 +37,26 @@ PharmaGuard/
 │   ├── preprocessing/        # Phase 2: normalization, features, pipeline, split
 │   ├── training/             # Phase 3: train, evaluate, threshold, model card
 │   ├── tracking/             # Phase 4: MLflow experiment tracker, metrics store
-│   └── api/                  # Phase 5: FastAPI app, routes, schemas, dashboard
-├── model_artifacts/          # Saved model (.json) and pipeline (.pkl)
+│   ├── api/                  # Phase 5: FastAPI app, routes, schemas, dashboard
+│   └── utils/                # Phase 7: new-data detection script
+├── model_artifacts/          # Saved model (.json) and pipeline (.pkl), versioned
 ├── model_cards/              # Model card per registered version
 ├── metrics/                  # Metrics history JSON (dashboard data source)
 ├── docker/
 │   ├── Dockerfile            # Multi-stage Docker build
 │   └── docker-compose.yml    # Local development compose
 ├── tests/                    # pytest unit and integration tests
-├── .github/workflows/        # GitHub Actions CI/CD & Cron workflows
+├── .github/
+│   ├── workflows/            # GitHub Actions CI/CD, Docker, Health & Data checks
+│   └── ISSUE_TEMPLATE/       # Auto-generated issue template for new data alerts
 ├── .dockerignore             # Docker build context exclusions
 ├── config.yaml               # Centralized configuration
 ├── requirements.txt          # Python dependencies
 ├── run_ingestion.py          # Phase 1 runner script
 ├── run_preprocessing.py      # Phase 2 runner script
 ├── run_training.py           # Phase 3 runner script (+ MLflow tracking)
-└── run_api.py                # Phase 5 API server runner
+├── run_api.py                # Phase 5 API server runner
+└── run_retrain.py            # Phase 7 one-command retrain & deploy
 ```
 
 ---
@@ -163,18 +167,34 @@ docker run -p 8000:8000 pharmaguard-api
 docker compose -f docker/docker-compose.yml up --build
 ```
 
-### 8. Deploy to Render (Free)
+### 8. Phase 7 — Automated New-Data Detection & Retraining
 
-1. Push your code to GitHub (including `model_artifacts/` and `metrics/`)
-2. Create a new **Web Service** on [Render.com](https://render.com)
-3. Connect your GitHub repo
-4. Set:
-   - **Environment**: Docker
-   - **Dockerfile Path**: `docker/Dockerfile`
-   - **Plan**: Free
-5. Deploy!
+PharmaGuard includes an automated **monthly GitHub Actions workflow** that checks whether new quarterly data has been released on the FDA FAERS portal. The FDA publishes new adverse event data every quarter (January, April, July, October).
 
-> The free tier sleeps after 15 minutes of inactivity. First request after sleep has ~30s cold start.
+#### How it works
+
+1. **Monthly Check**: On the 1st of every month, a GitHub Actions cron job runs `src/utils/check_new_data.py`.
+2. **Auto-Issue Creation**: If new quarters are detected on the FDA server that are not in our `config.yaml`, the workflow **automatically creates a GitHub Issue** titled `🚨 [Data Update] New FDA FAERS quarter(s) available`. You receive an email notification from GitHub.
+3. **One-Command Retrain**: When you receive the issue, run the retraining script on your local machine:
+
+```bash
+python run_retrain.py
+```
+
+This single command automatically:
+- Detects all new quarters available on the FDA server
+- Updates `config.yaml` with the new quarters
+- Runs data ingestion (`run_ingestion.py`)
+- Runs preprocessing (`run_preprocessing.py`)
+- Trains a new model version (`run_training.py`) — auto-versioned (v3, v4, v5, ...)
+- Stages, commits, and pushes updated model artifacts to GitHub
+- Triggers the CI/CD pipeline automatically
+
+> ⚠️ Training requires several GB of RAM and runs on your local machine. Free cloud servers (Render/GitHub Actions) do not have enough memory for XGBoost training on the full dataset.
+
+#### Manual trigger
+
+You can also trigger the data check manually from the GitHub **Actions** tab → **Scheduled — New Data Check** → **Run workflow**.
 
 ---
 
@@ -242,7 +262,7 @@ All parameters are centralized in `config.yaml`:
 - [x] **Phase 4**: Experiment Tracking (MLflow)
 - [x] **Phase 5**: REST API & Docker
 - [x] **Phase 6**: CI/CD (GitHub Actions)
-- [ ] **Phase 7**: Cloud Deployment & Auto-Retraining
+- [x] **Phase 7**: Cloud Deployment & Auto-Retraining
 - [ ] **Phase 8**: SHAP Explainability (Future)
 - [ ] **Phase 9**: Drift Detection (Future)
 

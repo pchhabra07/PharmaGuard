@@ -1,0 +1,67 @@
+# ==============================================================
+# PharmaGuard — Monthly New-Data Detection & Auto-Issue
+# ==============================================================
+# Runs on the 1st of every month at 08:00 UTC.
+# Checks whether the FDA has released new FAERS quarterly data
+# that PharmaGuard hasn't been trained on yet.
+#
+# If new data is found:
+#   → Automatically creates a GitHub Issue with retraining
+#     instructions so the maintainer gets an email notification.
+#
+# If no new data:
+#   → The workflow passes silently (no issue created).
+#
+# Can also be triggered manually from the Actions tab.
+# ==============================================================
+
+name: Scheduled — New Data Check
+
+on:
+  schedule:
+    # 1st of every month at 08:00 UTC (1:30 PM IST)
+    - cron: "0 8 1 * *"
+
+  # Allow manual trigger from the Actions tab
+  workflow_dispatch:
+
+# ── Permissions ──────────────────────────────────────────────
+# Needs write access to create issues automatically.
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  check-new-data:
+    name: Check FDA FAERS for New Quarters
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1. Check out the repository ───────────────────────────
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ── 2. Set up Python ──────────────────────────────────────
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # ── 3. Install minimal dependencies ───────────────────────
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      # ── 4. Run the new-data detection script ──────────────────
+      - name: Check for new FDA FAERS data
+        id: check
+        continue-on-error: true
+        run: python src/utils/check_new_data.py
+
+      # ── 5. Create GitHub Issue if new data found ──────────────
+      - name: Create retraining issue
+        if: steps.check.outcome == 'failure'
+        uses: peter-evans/create-issue-from-file@v5
+        with:
+          title: "🚨 [Data Update] New FDA FAERS quarter(s) available"
+          content-filepath: .github/ISSUE_TEMPLATE/new_data_alert.md
+          labels: data-update,retraining
