@@ -1,0 +1,46 @@
+# ==============================================================
+# PharmaGuard — Docker Build Verification
+# ==============================================================
+# Builds the Docker image on every push to main where the
+# Dockerfile, requirements, or source code has changed.
+#
+# This does NOT push the image anywhere — it only verifies
+# that the build completes successfully.
+# ==============================================================
+
+name: Docker — Build Check
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docker/**"
+      - "requirements.txt"
+      - "src/**"
+      - "config.yaml"
+      - "run_api.py"
+
+jobs:
+  docker-build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1. Check out the repository ───────────────────────────
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ── 2. Set up Docker Buildx ───────────────────────────────
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # ── 3. Build the Docker image (no push) ───────────────────
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          push: false
+          tags: pharmaguard-api:ci-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

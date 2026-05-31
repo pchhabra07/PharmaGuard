@@ -1,5 +1,8 @@
 # PharmaGuard 🛡️
 
+[![CI — Tests & Lint](https://github.com/pchhabra07/PharmaGuard/actions/workflows/ci.yml/badge.svg)](https://github.com/pchhabra07/PharmaGuard/actions/workflows/ci.yml)
+[![Docker — Build Check](https://github.com/pchhabra07/PharmaGuard/actions/workflows/docker-build.yml/badge.svg)](https://github.com/pchhabra07/PharmaGuard/actions/workflows/docker-build.yml)
+
 **End-to-End MLOps Pipeline for Adverse Drug Event Detection**
 
 PharmaGuard is a comprehensive **Machine Learning and MLOps** project designed to detect serious Adverse Drug Reactions (ADRs) from real-world patient medication reports using the publicly available **FDA FAERS** (Adverse Event Reporting System) dataset. 
@@ -238,7 +241,7 @@ All parameters are centralized in `config.yaml`:
 - [x] **Phase 3**: Model Training & Evaluation
 - [x] **Phase 4**: Experiment Tracking (MLflow)
 - [x] **Phase 5**: REST API & Docker
-- [ ] **Phase 6**: CI/CD (GitHub Actions)
+- [x] **Phase 6**: CI/CD (GitHub Actions)
 - [ ] **Phase 7**: Cloud Deployment & Auto-Retraining
 - [ ] **Phase 8**: SHAP Explainability (Future)
 - [ ] **Phase 9**: Drift Detection (Future)

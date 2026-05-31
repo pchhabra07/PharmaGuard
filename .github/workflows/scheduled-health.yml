@@ -1,0 +1,71 @@
+# ==============================================================
+# PharmaGuard — Scheduled Health Check
+# ==============================================================
+# Runs every Monday at 08:00 UTC to verify:
+#   1. FDA FAERS data endpoint is reachable
+#   2. Python dependencies are still installable
+#
+# If anything fails, the workflow fails and GitHub sends
+# a notification (email/mobile) to the repo owner.
+# ==============================================================
+
+name: Scheduled — Weekly Health Check
+
+on:
+  schedule:
+    # Every Monday at 08:00 UTC (1:30 PM IST)
+    - cron: "0 8 * * 1"
+
+  # Allow manual trigger from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    name: Dependency & Data Source Check
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1. Check out the repository ───────────────────────────
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ── 2. Set up Python ──────────────────────────────────────
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # ── 3. Verify dependencies install cleanly ────────────────
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          echo "✅ All dependencies installed successfully"
+
+      # ── 4. Check FDA FAERS endpoint ───────────────────────────
+      - name: Verify FDA FAERS data source
+        run: |
+          python -c "
+          import urllib.request
+          import sys
+
+          url = 'https://fis.fda.gov/extensions/FPD-QDE-FAERS/FPD-QDE-FAERS.html'
+          try:
+              req = urllib.request.Request(url, method='HEAD')
+              resp = urllib.request.urlopen(req, timeout=30)
+              print(f'✅ FDA FAERS endpoint reachable (HTTP {resp.status})')
+          except Exception as e:
+              print(f'❌ FDA FAERS endpoint unreachable: {e}')
+              sys.exit(1)
+          "
+
+      # ── 5. Verify core module imports ─────────────────────────
+      - name: Verify module health
+        run: |
+          python -c "from src.api.app import create_app; print('✅ API app importable')"
+          python -c "from src.api.schemas import PredictionRequest; print('✅ Schemas importable')"
+          python -c "from src.tracking.metrics_store import load_metrics_history; print('✅ Metrics store importable')"
+
+      # ── 6. Run tests ──────────────────────────────────────────
+      - name: Run test suite
+        run: pytest tests/ -v --tb=short -q

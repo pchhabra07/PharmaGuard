@@ -6,6 +6,7 @@
 *.docx
 PharmaGuard_Documentation_Phase3.md
 PharmaGuard_Documentation_Phase4_5.md
+PharmaGuard_Documentation_Phase6.md
 data/raw/
 data/processed/
 data/splits/
