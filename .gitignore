@@ -13,6 +13,7 @@ data/eda/
 model_cards/
 mlflow/
 mlruns/
+metrics/runs/
 
 # --- Python ---
 __pycache__/

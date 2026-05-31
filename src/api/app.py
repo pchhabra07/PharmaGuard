@@ -25,7 +25,6 @@ import joblib
 import yaml
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from xgboost import XGBClassifier
 
 logger = logging.getLogger(__name__)
@@ -132,11 +131,6 @@ def create_app() -> FastAPI:
     # ── Register routes ────────────────────────────────────────
     from src.api.routes import router
     app.include_router(router)
-
-    # ── Mount static files (plots) ─────────────────────────────
-    plots_dir = _PROJECT_ROOT / "metrics" / "runs"
-    plots_dir.mkdir(parents=True, exist_ok=True)
-    app.mount("/plots", StaticFiles(directory=str(plots_dir)), name="plots")
 
     return app
 

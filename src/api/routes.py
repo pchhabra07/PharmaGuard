@@ -160,6 +160,87 @@ async def model_history():
 
 
 # ────────────────────────────────────────────────────────────────────
+# Chart data (for dynamic dashboard)
+# ────────────────────────────────────────────────────────────────────
+
+
+@router.get(
+    "/model/charts",
+    summary="Chart data for dashboard",
+    description="Returns metrics pre-shaped for Chart.js rendering on the dashboard.",
+)
+async def model_charts():
+    """
+    Return chart-ready data for the dashboard.
+
+    Reshapes the metrics history into structures that Chart.js can
+    directly consume — confusion matrix cells, per-split metric
+    comparisons, and historical trend data.
+    """
+    import json as _json
+
+    metrics_path = _PROJECT_ROOT / "metrics" / "metrics_history.json"
+    history = []
+    try:
+        if metrics_path.exists():
+            with open(metrics_path, "r", encoding="utf-8") as f:
+                history = _json.load(f)
+    except Exception:
+        pass
+
+    if not history:
+        return {"latest": None, "history_trend": [], "runs_count": 0}
+
+    latest = history[-1]
+    test_m = latest.get("metrics", {}).get("test", {})
+    train_m = latest.get("metrics", {}).get("train", {})
+    val_m = latest.get("metrics", {}).get("val", {})
+
+    # Confusion matrix for the latest run (test split)
+    cm = test_m.get("confusion_matrix", [[0, 0], [0, 0]])
+
+    # Per-split comparison (radar chart)
+    metric_keys = ["precision", "recall", "f1", "accuracy", "specificity", "roc_auc", "pr_auc"]
+    splits_comparison = {
+        "labels": [k.replace("_", " ").title() for k in metric_keys],
+        "train": [train_m.get(k, 0) for k in metric_keys],
+        "val": [val_m.get(k, 0) for k in metric_keys],
+        "test": [test_m.get(k, 0) for k in metric_keys],
+    }
+
+    # Historical trend
+    history_trend = []
+    for run in history:
+        t = run.get("metrics", {}).get("test", {})
+        history_trend.append({
+            "version": run.get("version", "v1"),
+            "timestamp": run.get("timestamp", ""),
+            "f1": t.get("f1", 0),
+            "roc_auc": t.get("roc_auc", 0),
+            "pr_auc": t.get("pr_auc", 0),
+            "precision": t.get("precision", 0),
+            "recall": t.get("recall", 0),
+        })
+
+    return {
+        "latest": {
+            "version": latest.get("version", "v1"),
+            "threshold": latest.get("threshold", 0.5),
+            "threshold_strategy": latest.get("threshold_strategy", "f1"),
+            "config": latest.get("config", {}),
+            "test_metrics": {k: test_m.get(k, 0) for k in metric_keys},
+            "confusion_matrix": {
+                "tn": cm[0][0], "fp": cm[0][1],
+                "fn": cm[1][0], "tp": cm[1][1],
+            },
+            "splits_comparison": splits_comparison,
+        },
+        "history_trend": history_trend,
+        "runs_count": len(history),
+    }
+
+
+# ────────────────────────────────────────────────────────────────────
 # Single prediction
 # ────────────────────────────────────────────────────────────────────
 
