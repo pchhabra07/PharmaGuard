@@ -12,7 +12,6 @@ data/raw/
 data/processed/
 data/splits/
 data/eda/
-model_cards/
 mlflow/
 mlruns/
 metrics/runs/
